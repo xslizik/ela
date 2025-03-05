@@ -1,0 +1,11 @@
+---
+php_user: "www-data"
+php_group: "www-data"
+php_listen: "127.0.0.1:9000"
+mysql_root_password: "password123"
+db_name: "webapp"
+db_user: "webuser"
+db_password: "password123"
+server_port: "80"
+majestic_admin_email: "admin@majestic.local"
+majestic_admin_password: "I2VkgtoXtj86gqLymcQvgyNJCa4g5pSU0drbXPHTcapbgJRQrt"

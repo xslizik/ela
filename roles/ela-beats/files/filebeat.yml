@@ -1,0 +1,43 @@
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+filebeat.inputs:
+  - type: journald
+    tags: ["systemd", "auth"]
+    processors:
+      - decode_json_fields:
+          fields: ["message"]
+          target: "journald"
+          overwrite_keys: true
+      - add_fields:
+          when.contains.journald.message: "sshd"
+          fields:
+            service: "ssh"
+      - add_fields:
+          when.contains.journald.message: "cron"
+          fields:
+            service: "cron"
+      - add_fields:
+          when.contains.journald.message: "mariadb"
+          fields:
+            service: "mariadb"
+
+setup.ilm.overwrite: true
+
+setup.kibana:
+  host: "https://10.5.20.11:5601" # replace with sed
+  ssl.verification_mode: none
+
+output.elasticsearch:
+  hosts: ["https://10.5.20.11:9200"] # replace with sed
+  username: "elastic"
+  password: "S3cur3P@ss?" # replace with sed "${ES_PASSWORD}"
+  ssl.verification_mode: none
+  
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~

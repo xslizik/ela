@@ -1,0 +1,9 @@
+- module: apache
+  access:
+    enabled: true
+    var.paths:
+      - /usr/local/apache2/logs/access_log
+  error:
+    enabled: true
+    var.paths:
+      - /usr/local/apache2/logs/error_log

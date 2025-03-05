@@ -1,0 +1,13 @@
+[] apache logs parsing ?
+
+[] beat.yml dynamic password ?
+
+[] add sysmon along with winlogbeat
+- https://github.com/SwiftOnSecurity/sysmon-config
+- https://github.com/ion-storm/sysmon-config/blob/develop/sysmonconfig-export.xml
+
+[] configure vulnerabilities on windows
+
+[] complete the attacker path
+
+[] document findings

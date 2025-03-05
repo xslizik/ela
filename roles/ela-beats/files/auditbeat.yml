@@ -1,0 +1,102 @@
+auditbeat.modules:
+- module: auditd
+  audit_rules: |
+    # Log all executions
+    -a always,exit -F arch=b64 -S execve,execveat -k exec_commands
+    # Log changes to system users/groups
+    -w /etc/passwd -p wa -k identity
+    -w /etc/group -p wa -k identity
+    # Log changes to authentication mechanisms
+    -w /etc/pam.d/ -p wa -k auth
+    -w /etc/ssh/sshd_config -k sshd
+    # Log changes to sudoers
+    -w /etc/sudoers -p wa -k sudo_changes
+
+    # Log auditd logs
+    -w /var/log/audit/audit.log -p wa -k auditd
+
+    # 32-bit syscall detection
+    -a always,exit -F arch=b32 -S all -F key=32bit-abi
+
+    # Additional execution monitoring
+    -a always,exit -F arch=b64 -S execve,execveat -k exec
+
+    # External access monitoring
+    -a always,exit -F arch=b64 -S accept,bind,connect -F key=external-access
+
+    # Additional identity change monitoring
+    -w /etc/gshadow -p wa -k identity
+
+    # Unauthorized access attempts
+    -a always,exit -F arch=b64 -S open,creat,truncate,ftruncate,openat,open_by_handle_at -F exit=-EACCES -k access
+    -a always,exit -F arch=b64 -S open,creat,truncate,ftruncate,openat,open_by_handle_at -F exit=-EPERM -k access
+
+    # Login monitoring
+    -w /var/log/faillog -p wa -k logins
+    -w /var/log/lastlog -p wa -k logins
+    -w /var/log/tallylog -p wa -k logins
+    -w /var/run/faillock -p wa -k logins
+    
+    # Monitor login configuration files
+    -w /etc/login.defs -p wa -k login-config
+    -w /etc/securetty -p wa -k login-config
+    
+    # Monitor login-related PAM changes
+    -w /etc/pam.d/login -p wa -k login-config
+    -w /etc/pam.d/sshd -p wa -k login-config
+    
+    # Monitor user/group tools that can impact login
+    -w /usr/bin/passwd -p x -k passwd_modification
+    -w /usr/sbin/useradd -p x -k user_modification
+    -w /usr/sbin/usermod -p x -k user_modification
+    -w /usr/sbin/groupadd -p x -k group_modification
+    -w /usr/sbin/groupmod -p x -k group_modification
+
+- module: file_integrity
+  paths:
+  - /bin
+  - /usr/bin
+  - /sbin
+  - /usr/sbin
+  - /etc
+
+- module: system
+  datasets:
+    - package 
+
+  period: 2m 
+
+- module: system
+  datasets:
+    - host    
+    - login   
+    - process 
+    - socket  
+    - user    
+
+  state.period: 12h
+
+  user.detect_password_changes: true
+
+  login.wtmp_file_pattern: /var/log/wtmp*
+  login.btmp_file_pattern: /var/log/btmp*
+
+setup.ilm.overwrite: true
+
+setup.template.settings:
+  index.number_of_shards: 1
+
+setup.kibana:
+  host: "https://10.5.20.11:5601" # replace with sed
+  ssl.verification_mode: none
+
+output.elasticsearch:
+  hosts: ["https://10.5.20.11:9200"] # replace with sed
+  username: "elastic"
+  password: "S3cur3P@ss?" # replace with sed "${ES_PASSWORD}"
+  ssl.verification_mode: none
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~

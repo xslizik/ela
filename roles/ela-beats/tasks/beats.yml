@@ -1,0 +1,107 @@
+---
+#- name: Ensure ELASTIC environment variables are set in /root/.bashrc
+#  lineinfile:
+#    path: /root/.bashrc
+#    line: "{{ item }}"
+#    create: yes
+#    state: present
+#  loop:
+#    - 'export ES_IP={{ es_ip }}'
+#    - 'export ES_USERNAME="{{ es_username }}"'
+#    - 'export ES_PASSWORD="{{ es_password }}"'
+
+#- name: Source /root/.bashrc to apply changes
+#  shell: source /root/.bashrc
+#  args:
+#    executable: /bin/bash
+#  register: bashrc_source
+#  changed_when: bashrc_source.rc == 0
+
+- name: Reinstall ca-certificates
+  apt:
+    name: ca-certificates
+    state: present
+    force: yes
+
+- name: Install lsb-release and wget
+  apt:
+    name:
+      - lsb-release
+      - wget
+    state: present
+
+- name: Download Packetbeat
+  get_url:
+    url: https://artifacts.elastic.co/downloads/beats/packetbeat/packetbeat-8.17.2-amd64.deb
+    dest: /tmp/packetbeat-8.17.2-amd64.deb
+
+- name: Install Packetbeat
+  apt:
+    deb: /tmp/packetbeat-8.17.2-amd64.deb
+
+- name: Download Auditbeat
+  get_url:
+    url: https://artifacts.elastic.co/downloads/beats/auditbeat/auditbeat-8.17.3-amd64.deb
+    dest: /tmp/auditbeat-8.17.3-amd64.deb
+
+- name: Install Auditbeat
+  apt:
+    deb: /tmp/auditbeat-8.17.3-amd64.deb
+
+- name: Download Filebeat
+  get_url:
+    url: https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-8.17.3-amd64.deb
+    dest: /tmp/filebeat-8.17.3-amd64.deb
+
+- name: Install Filebeat
+  apt:
+    deb: /tmp/filebeat-8.17.3-amd64.deb
+
+- name: Install missing dependencies
+  apt:
+    name: '*'
+    state: latest
+    force_apt_get: yes
+
+- name: Copy multiple configuration files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  loop:
+    - { src: "../files/packetbeat.yml", dest: "/etc/packetbeat/packetbeat.yml" }
+    - { src: "../files/filebeat.yml", dest: "/etc/filebeat/filebeat.yml" }
+    - { src: "../files/auditbeat.yml", dest: "/etc/auditbeat/auditbeat.yml" }
+    - { src: "../files/apache.yml", dest: "/etc/filebeat/modules.d/apache.yml" }
+
+- name: Setup Packetbeat
+  command: packetbeat setup
+
+- name: Setup Auditbeat
+  command: auditbeat setup
+
+- name: Setup Filebeat
+  command: filebeat setup
+
+- name: Enable Filebeat Apache module
+  command: filebeat modules enable apache
+  
+- name: Restart Packetbeat
+  systemd:
+    name: packetbeat
+    state: restarted
+    enabled: yes
+
+- name: Restart Auditbeat
+  systemd:
+    name: auditbeat
+    state: restarted
+    enabled: yes
+
+- name: Restart Filebeat
+  systemd:
+    name: filebeat
+    state: restarted
+    enabled: yes

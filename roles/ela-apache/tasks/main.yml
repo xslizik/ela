@@ -1,0 +1,338 @@
+---
+- name: Remove existing Apache installation
+  apt:
+    name: apache2
+    state: absent
+    autoremove: yes
+
+- name: Install required dependencies
+  apt:
+    name:
+      - build-essential
+      - libpcre3-dev
+      - libssl-dev
+      - zlib1g-dev
+      - wget
+      - curl
+      - libxml2-dev
+      - libcurl4-openssl-dev
+      - libsqlite3-dev
+      - libonig-dev
+      - libfcgi-dev
+      - libjpeg-dev
+      - libpng-dev
+      - libzip-dev
+      - libxslt1-dev
+      - libsqlite3-dev
+      - libicu-dev
+      - mariadb-server
+      - mariadb-client
+      - libexpat1-dev
+      - pkg-config
+      - php8.2=8.2.26-*
+      - php8.2-cli=8.2.26-*
+      - php8.2-fpm=8.2.26-*
+      - php8.2-mysql=8.2.26-*
+      - python3
+      - python3-pip
+      - python3-pymysql
+      - unzip
+    state: present
+    update_cache: yes
+
+- name: Set Python3 as interpreter explicitly
+  set_fact:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Create system user for Apache
+  user:
+    name: "{{ php_user }}"
+    shell: "/usr/sbin/nologin"
+    system: yes
+
+- name: Create source directory
+  file:
+    path: "/usr/local/src"
+    state: directory
+    mode: '0755'
+
+- name: Download and extract Apache
+  get_url:
+    url: "https://archive.apache.org/dist/httpd/httpd-2.4.50.tar.gz"
+    dest: "/usr/local/src/httpd-2.4.50.tar.gz"
+
+- name: Extract Apache archive
+  unarchive:
+    src: "/usr/local/src/httpd-2.4.50.tar.gz"
+    dest: "/usr/local/src"
+    remote_src: yes
+
+- name: Download APR
+  get_url:
+    url: "https://archive.apache.org/dist/apr/apr-1.7.0.tar.gz"
+    dest: "/usr/local/src/apr-1.7.0.tar.gz"
+
+- name: Extract APR archive
+  unarchive:
+    src: "/usr/local/src/apr-1.7.0.tar.gz"
+    dest: "/usr/local/src"
+    remote_src: yes
+
+- name: Move APR to correct location
+  command: "mv /usr/local/src/apr-1.7.0 /usr/local/src/httpd-2.4.50/srclib/apr"
+  args:
+    creates: "/usr/local/src/httpd-2.4.50/srclib/apr"
+
+- name: Download APR-Util
+  get_url:
+    url: "https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.gz"
+    dest: "/usr/local/src/apr-util-1.6.1.tar.gz"
+
+- name: Extract APR-Util archive
+  unarchive:
+    src: "/usr/local/src/apr-util-1.6.1.tar.gz"
+    dest: "/usr/local/src"
+    remote_src: yes
+
+- name: Move APR-Util to correct location
+  command: "mv /usr/local/src/apr-util-1.6.1 /usr/local/src/httpd-2.4.50/srclib/apr-util"
+  args:
+    creates: "/usr/local/src/httpd-2.4.50/srclib/apr-util"
+
+- name: Configure and compile Apache
+  shell: |
+    ./configure --enable-so --enable-ssl --enable-rewrite --enable-proxy --enable-proxy-fcgi --with-included-apr --enable-mpms-shared=all --prefix=/usr/local/apache2
+    make -j$(nproc)
+    make install
+  args:
+    chdir: "/usr/local/src/httpd-2.4.50"
+
+- name: Create necessary directories and set permissions
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ php_user }}"
+    group: "{{ php_group }}"
+    mode: '0755'
+  loop:
+    - /usr/local/apache2/logs
+    - /usr/local/apache2/run
+    - /usr/local/apache2/htdocs
+
+- name: Allow Apache to bind to low ports without root privileges
+  command: setcap 'cap_net_bind_service=+ep' /usr/local/apache2/bin/httpd
+
+- name: Create Apache systemd service file
+  copy:
+    dest: /etc/systemd/system/apache2.service
+    content: |
+      [Unit]
+      Description=Apache HTTP Server
+      After=network.target
+
+      [Service]
+      Type=forking
+      ExecStart=/usr/local/apache2/bin/apachectl start
+      ExecStop=/usr/local/apache2/bin/apachectl stop
+      ExecReload=/usr/local/apache2/bin/apachectl graceful
+      PIDFile=/usr/local/apache2/logs/httpd.pid
+      User={{ php_user }}
+      Group={{ php_group }}
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Copy httpd.conf
+  copy:
+    src: ../files/httpd.conf
+    dest: /usr/local/apache2/conf/httpd.conf
+    owner: "{{ php_user }}"
+    group: "{{ php_group }}"
+    mode: '0755'
+
+- name: Configure Apache ServerName and Listen directive
+  blockinfile:
+    path: "/usr/local/apache2/conf/httpd.conf"
+    insertafter: "^#ServerName"
+    block: |
+      ServerName {{ ansible_host }}:{{ server_port }}
+      Listen {{ ansible_host }}:{{ server_port }}
+    state: present
+
+- name: Get PHP version dynamically
+  command: php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;'
+  register: php_version
+
+- name: Ensure PHP-FPM pool directory exists
+  file:
+    path: "/etc/php/{{ php_version.stdout }}/fpm/pool.d"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure PHP-FPM pool
+  copy:
+    dest: "/etc/php/{{ php_version.stdout }}/fpm/pool.d/www.conf"
+    content: |
+      [www]
+      user = {{ php_user }}
+      group = {{ php_group }}
+      listen = {{ php_listen }}
+      pm = dynamic
+      pm.max_children = 5
+      pm.start_servers = 2
+      pm.min_spare_servers = 1
+      pm.max_spare_servers = 3
+
+- name: Create PHP-FPM systemd service
+  copy:
+    dest: "/etc/systemd/system/php-fpm.service"
+    content: |
+      [Unit]
+      Description=PHP FastCGI Process Manager
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/sbin/php-fpm{{ php_version.stdout }} --nodaemonize
+      ExecReload=/bin/kill -USR2 $MAINPID
+      PIDFile=/run/php/php{{ php_version.stdout }}-fpm.pid
+      Type=simple
+
+      [Install]
+      WantedBy=multi-user.target
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Configure Apache to use PHP-FPM
+  copy:
+    dest: "/usr/local/apache2/conf/extra/php-fpm.conf"
+    content: |
+      <FilesMatch \.php$>
+          SetHandler "proxy:fcgi://{{ php_listen }}"
+      </FilesMatch>
+
+      DirectoryIndex index.html index.php
+      AddType application/x-httpd-php .php
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable PHP-FPM configuration in Apache
+  lineinfile:
+    path: "/usr/local/apache2/conf/httpd.conf"
+    line: "Include conf/extra/php-fpm.conf"
+    state: present
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start PHP-FPM
+  systemd:
+    name: php-fpm
+    enabled: yes
+    state: started
+
+- name: Start and enable MySQL service
+  systemd:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Create MySQL database
+  command: mysql -u root -e "CREATE DATABASE IF NOT EXISTS {{ db_name }};"
+
+- name: Create MySQL user
+  command: mysql -u root -e "CREATE USER IF NOT EXISTS '{{ db_user }}'@'localhost' IDENTIFIED BY '{{ db_password }}';"
+
+- name: Grant privileges to MySQL user
+  command: mysql -u root -e "GRANT ALL PRIVILEGES ON {{ db_name }}.* TO '{{ db_user }}'@'localhost'; FLUSH PRIVILEGES;"
+
+- name: Refresh privilege table
+  command: mysql -u root -e "FLUSH PRIVILEGES;"
+
+- name: Create users table and add admin user
+  command: |
+    mysql -u root -D {{ db_name }} -e "
+    CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        is_admin BOOLEAN NOT NULL DEFAULT 0
+    );
+    INSERT INTO users (email, password, is_admin) VALUES
+    ('{{ majestic_admin_email }}', '{{ majestic_admin_password }}', TRUE)
+    ON DUPLICATE KEY UPDATE password=password;
+    "
+
+- name: Copy entire templates directory recursively
+  copy:
+    src: "../files/templates/"
+    dest: "/usr/local/apache2/htdocs"
+    owner: "{{ php_user }}"
+    group: "{{ php_group }}"
+    mode: '0755'
+
+- name: Delete /usr/local/apache2/htdocs/index.html
+  file:
+    path: /usr/local/apache2/htdocs/index.html
+    state: absent
+
+- name: Create test.php in /usr/local/apache2/htdocs/
+  copy:
+    dest: /usr/local/apache2/htdocs/test.php
+    content: |
+      <?php
+          echo "<h1>PHP is working!</h1>";
+          echo "<p>Server time: " . date('Y-m-d H:i:s') . "</p>";
+          echo "<p>PHP version: " . phpversion() . "</p>";
+
+          try {
+              $conn = new PDO('mysql:host=localhost;dbname={{ db_name }}', '{{ db_user }}', '{{ db_password }}');
+              echo "<p>Database connection successful!</p>";
+
+              $stmt = $conn->query('SELECT COUNT(*) FROM users');
+              $count = $stmt->fetchColumn();
+              echo "<p>Number of users in database: " . $count . "</p>";
+          } catch (PDOException $e) {
+              echo "<p>Database connection failed: " . $e->getMessage() . "</p>";
+          }
+      ?>
+    owner: "{{ php_user }}"
+    group: "{{ php_group }}"
+    mode: '0755'
+
+- name: Ensure Apache and MySQL services are restarted
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  loop:
+    - apache2
+    - mysql
+    - php-fpm
+
+- name: Create a vulnerable backup script
+  copy:
+    dest: /opt/backup.sh
+    content: |
+      #!/bin/bash
+      cd /usr/local/apache2/htdocs && tar cvzf /var/backups/backup_$(date +%Y_%m_%d_%Hh%M).tar.gz *
+    owner: root
+    group: root
+    mode: '0773'
+
+- name: Add the cronjob to run backup.sh every 40 minutes
+  cron:
+    name: "Backup"
+    user: root
+    minute: "*/40"
+    job: "/opt/backup.sh"
+
+- name: Restart cron service (ensure cronjob is applied)
+  service:
+    name: cron
+    state: restarted
+    enabled: yes
