@@ -1,4 +1,4 @@
-# Wazi
+# Ela
 
 ## Setup Ludus
 Follow how to install ludus, add roles, and deploy ranges
