@@ -43,10 +43,6 @@ ludus:
       block_internet: true
     roles:
       - name: ela-apache
-      - name: badsectorlabs.ludus_elastic_agent
-        depends_on:
-          - vm_name: "{{ range_id }}-ela"
-            role: badsectorlabs.ludus_elastic_container
       - name: ela-beats
         depends_on:
           - vm_name: "{{ range_id }}-apache"

@@ -1,0 +1,62 @@
+- name: Check if Chocolatey is installed
+  win_command: choco --version
+  register: choco_check
+  ignore_errors: yes
+
+- name: Install Chocolatey if not present
+  win_shell: |
+    Set-ExecutionPolicy Bypass -Scope Process -Force;
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+  when: choco_check.rc != 0
+
+- name: Install nmap via chocolatey
+  win_shell: powershell.exe -Command "choco install nmap -y"
+  ignore_errors: yes
+
+- name: Uninstall nmap via chocolatey
+  win_shell: powershell.exe -Command "choco uninstall nmap -y"
+  ignore_errors: yes
+
+- name: Download Packetbeat
+  win_get_url:
+    url: 'https://artifacts.elastic.co/downloads/beats/packetbeat/packetbeat-8.17.3-windows-x86_64.zip'
+  dest: 'C:\Users\Public\Downloads\packetbeat-8.17.3-windows-x86_64.zip'
+
+- name: Create Packetbeat subdirectory
+  win_file:
+    path: 'C:\Program Files\packetbeat'
+    state: directory
+
+- name: Unzip to temporary folder
+  win_unzip:
+    src: 'C:\Users\Public\Downloads\packetbeat-8.17.3-windows-x86_64.zip'
+    dest: 'C:\Users\Public\Downloads\packetbeat_extract'
+    delete_archive: yes
+
+- name: Copy contents of nested folder to final destination
+  win_copy:
+    src: 'C:\Users\Public\Downloads\packetbeat_extract\packetbeat-8.17.3-windows-x86_64.zip'
+    dest: 'C:\Program Files\packetbeat'
+    remote_src: yes
+
+- name: Copy custom packetbeat.yml configuration file
+  win_copy:
+    src: '../files/packetbeat.yml'
+    dest: 'C:\Program Files\packetbeat\packetbeat.yml'
+    force: yes
+
+- name: Install Packetbeat as a service
+  win_command: 'powershell.exe -ExecutionPolicy Bypass -File .\install-service-packetbeat.ps1'
+  args:
+    chdir: 'C:\Program Files\packetbeat'
+
+- name: Setup Packetbeat
+  win_command: '.\packetbeat.exe setup -e'
+  args:
+    chdir: 'C:\Program Files\packetbeat'
+
+- name: Start Packetbeat service
+  win_service:
+    name: packetbeat
+    state: started

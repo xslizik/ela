@@ -1,10 +1,11 @@
-[] apache logs parsing ?
+[] windows Winlogbeat Packetbeat
 
 [] beat.yml dynamic password ?
 
-[] add sysmon along with winlogbeat
-- https://github.com/SwiftOnSecurity/sysmon-config
-- https://github.com/ion-storm/sysmon-config/blob/develop/sysmonconfig-export.xml
+[] linux add firewall
+
+[] create dashboards + queries 
+https://www.reddit.com/r/elasticsearch/comments/dv8eks/comment/f7d6ctu/
 
 [] configure vulnerabilities on windows
 

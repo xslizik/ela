@@ -1,22 +1,4 @@
 ---
-#- name: Ensure ELASTIC environment variables are set in /root/.bashrc
-#  lineinfile:
-#    path: /root/.bashrc
-#    line: "{{ item }}"
-#    create: yes
-#    state: present
-#  loop:
-#    - 'export ES_IP={{ es_ip }}'
-#    - 'export ES_USERNAME="{{ es_username }}"'
-#    - 'export ES_PASSWORD="{{ es_password }}"'
-
-#- name: Source /root/.bashrc to apply changes
-#  shell: source /root/.bashrc
-#  args:
-#    executable: /bin/bash
-#  register: bashrc_source
-#  changed_when: bashrc_source.rc == 0
-
 - name: Reinstall ca-certificates
   apt:
     name: ca-certificates
@@ -32,12 +14,12 @@
 
 - name: Download Packetbeat
   get_url:
-    url: https://artifacts.elastic.co/downloads/beats/packetbeat/packetbeat-8.17.2-amd64.deb
-    dest: /tmp/packetbeat-8.17.2-amd64.deb
+    url: https://artifacts.elastic.co/downloads/beats/packetbeat/packetbeat-8.17.3-amd64.deb
+    dest: /tmp/packetbeat-8.17.3-amd64.deb
 
 - name: Install Packetbeat
   apt:
-    deb: /tmp/packetbeat-8.17.2-amd64.deb
+    deb: /tmp/packetbeat-8.17.3-amd64.deb
 
 - name: Download Auditbeat
   get_url:
@@ -75,6 +57,34 @@
     - { src: "../files/filebeat.yml", dest: "/etc/filebeat/filebeat.yml" }
     - { src: "../files/auditbeat.yml", dest: "/etc/auditbeat/auditbeat.yml" }
     - { src: "../files/apache.yml", dest: "/etc/filebeat/modules.d/apache.yml" }
+
+- name: Set Beats variables
+  set_fact:
+    beats_config_files:
+      - /etc/filebeat/filebeat.yml
+      - /etc/packetbeat/packetbeat.yml
+      - /etc/auditbeat/auditbeat.yml
+
+- name: Replace USER_SECOND_OCTET in all config files
+  replace:
+    path: "{{ item }}"
+    regexp: '10\.USER_SECOND_OCTET\.20\.11'
+    replace: "10.{{ range_second_octet  }}.20.11"
+  loop: "{{ beats_config_files }}"
+
+- name: Replace USERNAME in all config files
+  replace:
+    path: "{{ item }}"
+    regexp: 'USERNAME'
+    replace: "{{ elastic_username }}"
+  loop: "{{ beats_config_files }}"
+
+- name: Replace PASSWORD in all config files
+  replace:
+    path: "{{ item }}"
+    regexp: 'PASSWORD'
+    replace: "{{ elastic_password }}"
+  loop: "{{ beats_config_files }}"
 
 - name: Setup Packetbeat
   command: packetbeat setup

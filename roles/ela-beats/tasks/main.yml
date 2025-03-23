@@ -3,3 +3,8 @@
   ansible.builtin.include_tasks: 
     file: beats.yml
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Setup Beats on Windows-based machine
+  ansible.builtin.include_tasks:
+    file: wbeats.yml
+  when: ansible_os_family == 'Windows'

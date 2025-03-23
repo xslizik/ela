@@ -1,0 +1,106 @@
+---
+- name: Set Execution Policy to Bypass for all scopes
+  win_shell: |
+    Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass -Force
+    Set-ExecutionPolicy -Scope LocalMachine -ExecutionPolicy Bypass -Force
+    exit 0
+  ignore_errors: yes
+
+- name: Download Sysmon
+  win_get_url:
+    url: https://download.sysinternals.com/files/Sysmon.zip
+    dest: 'C:\Users\Public\Downloads\Sysmon.zip'
+
+- name: Create Sysmon subdirectory
+  win_file:
+    path: 'C:\Program Files\Sysmon'
+    state: directory
+
+- name: Unzip Sysmon
+  win_unzip:
+    src: 'C:\Users\Public\Downloads\Sysmon.zip'
+    dest: 'C:\Program Files\Sysmon'
+    delete_archive: yes
+
+- name: Copy Sysmon configuration to Program Files
+  win_copy:
+    src: '../files/sysmonconfig-export.xml'
+    dest: 'C:\Program Files\Sysmon\sysmonconfig-export.xml'
+
+- name: Install Sysmon with config
+  win_command: '.\Sysmon.exe -accepteula -i .\sysmonconfig-export.xml'
+  args:
+    chdir: 'C:\Program Files\Sysmon'
+
+- name: Enable ProcessCreationIncludeCmdLine_Enabled
+  win_regedit:
+    path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit'
+    name: ProcessCreationIncludeCmdLine_Enabled
+    data: 1
+    type: dword
+    state: present
+
+- name: Enable PowerShell Script Block Logging
+  win_regedit:
+    path: 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging'
+    name: EnableScriptBlockLogging
+    data: 1
+    type: dword
+    state: present
+
+- name: Download Winlogbeat
+  win_get_url:
+    url: https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.17.2-windows-x86_64.zip
+    dest: 'C:\Users\Public\Downloads\winlogbeat-8.17.2-windows-x86_64.zip'
+
+- name: Create Winlogbeat subdirectory
+  win_file:
+    path: 'C:\Program Files\winlogbeat'
+    state: directory
+
+- name: Unzip to temporary folder
+  win_unzip:
+    src: 'C:\Users\Public\Downloads\winlogbeat-8.17.2-windows-x86_64.zip'
+    dest: 'C:\Users\Public\Downloads\winlogbeat_extract'
+    delete_archive: yes
+
+- name: Copy contents of nested folder to final destination
+  win_copy:
+    src: 'C:\Users\Public\Downloads\winlogbeat_extract\winlogbeat-8.17.2-windows-x86_64\'
+    dest: 'C:\Program Files\winlogbeat'
+    remote_src: yes
+    
+- name: Copy custom winlogbeat.yml configuration file
+  win_copy:
+    src: '../files/winlogbeat.yml'
+    dest: 'C:\Program Files\winlogbeat\winlogbeat.yml'
+    force: yes
+
+- name: Replace variables in winlogbeat.yml (case-sensitive)
+  win_shell: |
+    $content = Get-Content -Path 'C:\Program Files\winlogbeat\winlogbeat.yml'
+    $content = $content | ForEach-Object {
+        [regex]::Replace($_, '10\.USER_SECOND_OCTET\.20\.11', '10.{{ range_second_octet }}.20.11', 'None')
+    }
+    $content = $content | ForEach-Object {
+        [regex]::Replace($_, 'USERNAME', '{{ elastic_username }}', 'None')
+    }
+    $content = $content | ForEach-Object {
+        [regex]::Replace($_, 'PASSWORD', '{{ elastic_password }}', 'None')
+    }
+    $content | Set-Content -Path 'C:\Program Files\winlogbeat\winlogbeat.yml'
+
+- name: Install Winlogbeat as a service
+  win_command: 'powershell.exe -ExecutionPolicy Bypass -File .\install-service-winlogbeat.ps1'
+  args:
+    chdir: 'C:\Program Files\winlogbeat'
+
+- name: Setup Winlogbeat
+  win_command: '.\winlogbeat.exe setup -e'
+  args:
+    chdir: 'C:\Program Files\winlogbeat'
+
+- name: Start Winlogbeat service
+  win_service:
+    name: winlogbeat
+    state: started

@@ -1,4 +1,3 @@
 ---
-es_ip: "10.5.20.11"
-es_username: "elastic"
-es_password: "S3cur3P@ss?"
+elastic_username: "elastic"
+elastic_password: "S3cur3P@ss?"

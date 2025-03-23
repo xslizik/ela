@@ -5,7 +5,7 @@ ludus:
     template: ubuntu-22.04-x64-server-template
     vlan: 20
     ip_last_octet: 11
-    ram_gb: 8
+    ram_gb: 16
     cpus: 4
     linux: true
     testing:
@@ -22,7 +22,7 @@ ludus:
     template: debian-12-x64-server-template
     vlan: 20
     ip_last_octet: 12
-    ram_gb: 4
+    ram_gb: 8
     cpus: 2
     linux: true
     testing:
@@ -30,14 +30,10 @@ ludus:
       block_internet: true
     roles:
       - name: ela-apache
-      - name: badsectorlabs.ludus_elastic_agent
+      - name: ela-beats
         depends_on:
           - vm_name: "{{ range_id }}-ela"
             role: badsectorlabs.ludus_elastic_container
-      - name: ela-beats
-        depends_on:
-          - vm_name: "{{ range_id }}-apache"
-            role: badsectorlabs.ludus_elastic_agent
 
   # WIN PC
   - vm_name: "{{ range_id }}-win11"
@@ -45,7 +41,7 @@ ludus:
     template: win11-22h2-x64-enterprise-template
     vlan: 20
     ip_last_octet: 14
-    ram_gb: 8
+    ram_gb: 16
     cpus: 4
     windows:
       install_additional_tools: false
@@ -54,7 +50,7 @@ ludus:
       snapshot: true
       block_internet: true
     roles:
-      - name: badsectorlabs.ludus_elastic_agent
+      - name: ela-beats
         depends_on:
           - vm_name: "{{ range_id }}-ela"
             role: badsectorlabs.ludus_elastic_container

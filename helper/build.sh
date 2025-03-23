@@ -1,7 +1,7 @@
 #!/bin/bash
 
 user="KWAZ"
-template="./topology-tests/0_linux.yml"
+template="./topology-tests/2_siem.yml"
 
 role_location="./roles/"
 roles=(
@@ -35,3 +35,6 @@ ludus range logs -f --user $user
 # ludus range wireguard get --user $user > $user.conf
 # ludus ansible roles add badsectorlabs.ludus_elastic_container --user "$user"
 # ludus ansible roles add badsectorlabs.ludus_elastic_agent --user "$user"
+
+#ludus range abort --user KWAZ
+#ludus ansible role add -d "./roles/ela-beats" -f --user "KWAZ" && ludus range deploy -t user-defined-roles --limit "localhost, KWAZ-win11" --only-roles "ela-beats" --user "KWAZ" && ludus range logs -f --user "KWAZ"

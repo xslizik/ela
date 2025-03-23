@@ -26,13 +26,13 @@ filebeat.inputs:
 setup.ilm.overwrite: true
 
 setup.kibana:
-  host: "https://10.5.20.11:5601" # replace with sed
+  host: "https://10.USER_SECOND_OCTET.20.11:5601"
   ssl.verification_mode: none
 
 output.elasticsearch:
-  hosts: ["https://10.5.20.11:9200"] # replace with sed
-  username: "elastic"
-  password: "S3cur3P@ss?" # replace with sed "${ES_PASSWORD}"
+  hosts: ["https://10.USER_SECOND_OCTET.20.11:9200"]
+  username: "USERNAME" 
+  password: "PASSWORD"
   ssl.verification_mode: none
   
 processors:
