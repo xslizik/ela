@@ -104,3 +104,13 @@
   win_service:
     name: winlogbeat
     state: started
+
+- name: Copy install_packetbeat.ps1 to Desktop
+  win_copy:
+    src: '../files/install_packetbeat.ps1'
+    dest: 'C:\Users\localuser\Desktop\install_packetbeat.ps1'
+  
+- name: Copy install_packetbeat.yml to Desktop
+  win_copy:
+    src: '../files/packetbeat.yml'
+    dest: 'C:\Users\localuser\Desktop\packetbeat.yml'

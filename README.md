@@ -10,11 +10,19 @@ https://docs.ludus.cloud/docs/quick-start/install-ludus
 - badsectorlabs.ludus_elastic_container
 
 ## Login to Elastic (second octet is your range_id)
-https://10.5.20.11:5601/
+https://10.5.20.11:5601/login?next=%2Fapp%2Fhome
 
 ```
 elastic
 S3cur3P@ss?
+```
+
+### Win11 packetbeat has to be installed manually
+
+```
+# open powershell as administrator 
+cd Desktop
+.\install_packetbeat.ps1
 ```
 
 ## Topology
@@ -23,6 +31,7 @@ S3cur3P@ss?
 ### Inspiration
 - https://github.com/badsectorlabs/ludus_elastic_container
 - https://github.com/SwiftOnSecurity/sysmon-config
+- https://github.com/olafhartong/sysmon-modular
 - https://www.elastic.co/docs
 - https://docs.metasploit.com/
 - https://www.exploit-db.com/exploits/50406

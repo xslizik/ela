@@ -50,6 +50,21 @@ Copy-Item -Path "$sourceDir\*" -Destination $packetbeatInstallDir -Recurse -Forc
 # Copy custom packetbeat.yml configuration file
 Copy-Item -Path ".\packetbeat.yml" -Destination "$packetbeatInstallDir\packetbeat.yml" -Force
 
+$content = Get-Content -Path "$packetbeatInstallDir\packetbeat.yml"
+$content = $content | ForEach-Object {
+    [regex]::Replace($_, '10\.USER_SECOND_OCTET\.20\.11', '10.5.20.11', 'None')
+}
+$content = $content | ForEach-Object {
+    [regex]::Replace($_, 'USERNAME', 'elastic', 'None')
+}
+$content = $content | ForEach-Object {
+    [regex]::Replace($_, 'PASSWORD', 'S3cur3P@ss?', 'None')
+}
+$content = $content | ForEach-Object {
+    [regex]::Replace($_, 'any', '0', 'None')
+}
+$content | Set-Content -Path 'C:\Program Files\packetbeat\packetbeat.yml'
+
 # Install Packetbeat as a service
 Push-Location $packetbeatInstallDir
 powershell.exe -ExecutionPolicy Bypass -File .\install-service-packetbeat.ps1
@@ -62,3 +77,6 @@ Pop-Location
 
 # Start Packetbeat service
 Start-Service -Name packetbeat
+
+rm .\packetbeat.yml
+rm .\install_packetbeat.ps1

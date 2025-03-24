@@ -1,3 +1,5 @@
+# this playbook does not work because npcap cannot be installed without GUI :(
+
 - name: Check if Chocolatey is installed
   win_command: choco --version
   register: choco_check

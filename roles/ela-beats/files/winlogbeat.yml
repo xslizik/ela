@@ -31,10 +31,16 @@ winlogbeat.event_logs:
 
   - name: Microsoft-Windows-Sysmon/Operational
     event_id: 1, 3, 7, 8, 11  # Process creation, network connection, image loaded, etc.
+  
+  - name: Sysmon  # Some setups log to "Sysmon" directly
+    event_id: 1, 3, 7, 8, 11
+    ignore_older: 72h
 
   - name: Windows PowerShell
     event_id: 400, 403, 600, 800  # Engine state, engine lifecycle, provider lifecycle, pipeline execution
-
+    level: verbose
+    ignore_older: 72h
+  
   - name: Microsoft-Windows-PowerShell/Operational
     event_id: 4103, 4104, 4105, 4106  # Script block logging, module logging, etc.
 

@@ -1,7 +1,3 @@
-[] windows Winlogbeat Packetbeat
-
-[] beat.yml dynamic password ?
-
 [] linux add firewall
 
 [] create dashboards + queries 
