@@ -100,3 +100,12 @@ processors:
   - add_host_metadata: ~
   - add_cloud_metadata: ~
   - add_docker_metadata: ~
+  - drop_event:
+      when:
+        or:
+          - equals:
+              process.name: "packetbeat"
+          - equals:
+              process.name: "auditbeat"
+          - equals:
+              process.name: "filebeat"

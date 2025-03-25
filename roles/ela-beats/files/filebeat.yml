@@ -4,24 +4,17 @@ filebeat.config.modules:
 
 filebeat.inputs:
   - type: journald
-    tags: ["systemd", "auth"]
+    tags: ["systemd", "ssh", "cron"]
+    include_matches:
+      - "UNIT=ssh.service"
+      - "UNIT=cron.service"
     processors:
-      - decode_json_fields:
-          fields: ["message"]
-          target: "journald"
-          overwrite_keys: true
       - add_fields:
-          when.contains.journald.message: "sshd"
           fields:
             service: "ssh"
       - add_fields:
-          when.contains.journald.message: "cron"
           fields:
             service: "cron"
-      - add_fields:
-          when.contains.journald.message: "mariadb"
-          fields:
-            service: "mariadb"
 
 setup.ilm.overwrite: true
 
@@ -34,7 +27,7 @@ output.elasticsearch:
   username: "USERNAME" 
   password: "PASSWORD"
   ssl.verification_mode: none
-  
+
 processors:
   - add_host_metadata:
       when.not.contains.tags: forwarded

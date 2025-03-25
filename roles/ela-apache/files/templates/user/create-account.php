@@ -1,15 +1,7 @@
 <?php
+    $errorMessage = "";
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        header('Content-Type: application/json');
-        http_response_code(501);
-
-        $response = [
-            'success' => false,
-            'message' => 'Not implemented'
-        ];
-
-        echo json_encode($response);
-        exit;
+        $errorMessage = "Not implemented";
     }
 ?>
 
@@ -55,6 +47,8 @@
                 <label class="font-semibold block" for="street">Street Address:</label>
                 <input class="block w-full  bg-gray-100 p-2" type="text" id="street" name="street">
 
+                <div id="errorMessage" class="text-red-500 text-sm text-center mt-2 hidden"><?php echo $errorMessage; ?></div>
+                
                 <div class="w-full flex justify-center mt-5">
                     <input type="submit" value="Proceed"
                         class="bg-black w-[30%] min-w-[150px] text-white hover:bg-white hover:text-black  hover:border-black border-2 border-white  px-6 py-2 text-center text-md transition ease-in-out duration-100">
@@ -63,7 +57,14 @@
         </section>
     </div>
 
+    <script>
+        const errorMessageDiv = document.getElementById('errorMessage');
 
+        // Show the error message if there is one
+        if (errorMessageDiv.innerText.trim() !== "") {
+            errorMessageDiv.classList.remove("hidden");
+        }
+    </script>
 </body>
 
 </html>

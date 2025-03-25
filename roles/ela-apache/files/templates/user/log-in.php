@@ -1,25 +1,46 @@
 <?php
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        header('Content-Type: application/json');
-        http_response_code(401);
+require_once '../config/database.php';
 
-        $response = [
-            'success' => false,
-            'message' => 'Wrong password'
-        ];
+$errorMessage = "";
 
-        echo json_encode($response);
-        exit;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'] ?? null;
+    $password = $_POST['password'] ?? null;
+
+    if (!$email || !$password) {
+        http_response_code(400); // Bad Request
+        $errorMessage = "Error 400: Missing email or password.";
+    } else {
+        try {
+            $pdo = new PDO("mysql:host=$db_host;dbname=$db_name", "$db_user", "$db_password");
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            $stmt = $pdo->prepare("SELECT password FROM users WHERE email = :email");
+            $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+            $stmt->execute();
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($password == $user['password']) {
+                http_response_code(200);
+                header("Location: /user/user-account.php");
+                exit;
+            } else {
+                http_response_code(401); // Unauthorized
+                $errorMessage = "Error 401: Wrong email or password.";
+            }
+        } catch (PDOException $e) {
+            http_response_code(500); // Internal Server Error
+            $errorMessage = "Error 500: Database error. Please try again later.";
+        }
     }
+}
 ?>
 
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-
     <script src="../js/components.js"></script>
     <script src="https://cdn.tailwindcss.com"></script> 
 </head>
@@ -33,11 +54,14 @@
         <section class="mt-10 max-w-3xl mx-auto">
             <form class="w-full" action="/user/log-in.php" method="POST">
 
-                <label class="font-semibold block" for="email">Email:</label>
-                <input class="block w-full bg-gray-100 p-2" type="email" id="email" name="email" required value=""><br>
+                <label class="font-semibold block mt-4" for="email">Email:</label>
+                <input class="block w-full bg-gray-100 p-2" type="email" id="email" name="email" required value="<?php echo htmlspecialchars($email ?? ''); ?>"><br>
 
                 <label class="font-semibold block" for="password">Password:</label>
-                <input class="block w-full bg-gray-100 p-2" type="password" id="password" name="password" required value="">
+                <input class="block w-full bg-gray-100 p-2" type="password" id="password" name="password" required>
+
+                <!-- Error message display -->
+                <div id="errorMessage" class="text-red-500 text-sm text-center mt-2 hidden"><?php echo $errorMessage; ?></div>
 
                 <div class="relative flex justify-center w-full mt-5 gap-4">
                     <label class="font-semibold block">Show Password:</label>
@@ -62,13 +86,18 @@
     </div>
 
     <script>
-        const passwordInput = document.getElementById('password')
-        const showPasswordCheckBox = document.getElementById('showPasswordCheckBox')
+        const passwordInput = document.getElementById('password');
+        const showPasswordCheckBox = document.getElementById('showPasswordCheckBox');
+        const errorMessageDiv = document.getElementById('errorMessage');
 
         showPasswordCheckBox.oninput = () => {
-            passwordInput.type = showPasswordCheckBox.checked ? 'text' : 'password'
+            passwordInput.type = showPasswordCheckBox.checked ? 'text' : 'password';
+        }
+
+        // Show the error message if there is one
+        if (errorMessageDiv.innerText.trim() !== "") {
+            errorMessageDiv.classList.remove("hidden");
         }
     </script>
-
 </body>
 </html>

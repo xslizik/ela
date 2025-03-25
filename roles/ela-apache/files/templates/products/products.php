@@ -123,6 +123,21 @@
         </section>
 
     </div>
+
+    <div id="feedbackPrompt" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 text-white p-3 rounded-md hidden text-center text-sm z-50">
+        Want to help us improve? Leave feedback <a href="/user/feedback.php" class="text-yellow-400 font-bold underline">here</a>.
+        <button onclick="closeFeedback()" class="ml-2 text-white">✖</button>
+    </div>
+
+    <script>
+        function showFeedbackPrompt() {
+            document.getElementById("feedbackPrompt").classList.remove("hidden");
+        }
+        function closeFeedback() {
+            document.getElementById("feedbackPrompt").classList.add("hidden");
+        }
+        setTimeout(showFeedbackPrompt, 3000);
+    </script>
 </body>
 
 </html>

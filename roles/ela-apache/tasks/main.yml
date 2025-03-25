@@ -1,4 +1,8 @@
 ---
+- name: Setup firewall  
+  ansible.builtin.include_tasks: 
+    file: iptables.yml
+
 - name: Remove existing Apache installation
   apt:
     name: apache2
@@ -235,6 +239,22 @@
     enabled: yes
     state: started
 
+- name: Copy 50-server.cnf to /etc/mysql/mariadb.conf.d/
+  copy:
+    src: "../files/50-server.cnf"
+    dest: "/etc/mysql/mariadb.conf.d/50-server.cnf"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ensure /var/log/mysql directory exists with correct permissions
+  file:
+    path: /var/log/mysql
+    state: directory
+    mode: '2750'
+    owner: mysql
+    group: mysql
+
 - name: Start and enable MySQL service
   systemd:
     name: mysql
@@ -280,9 +300,9 @@
     path: /usr/local/apache2/htdocs/index.html
     state: absent
 
-- name: Create test.php in /usr/local/apache2/htdocs/
+- name: Create status.php in /usr/local/apache2/htdocs/
   copy:
-    dest: /usr/local/apache2/htdocs/test.php
+    dest: /usr/local/apache2/htdocs/status.php
     content: |
       <?php
           echo "<h1>PHP is working!</h1>";
@@ -304,6 +324,37 @@
     group: "{{ php_group }}"
     mode: '0755'
 
+- name: Create responses directory
+  file:
+    path: "/usr/local/apache2/htdocs/responses"
+    state: directory
+    owner: "{{ php_user }}"
+    group: "{{ php_group }}"
+    mode: '0755'
+
+- name: Create config directory
+  file:
+    path: "/usr/local/apache2/htdocs/config"
+    state: directory
+    owner: "{{ php_user }}"
+    group: "{{ php_group }}"
+    mode: '0755'
+
+- name: Create test.php in /usr/local/apache2/htdocs/
+  copy:
+    dest: /usr/local/apache2/htdocs/config/database.php
+    content: |
+      <?php
+        // Database configuration
+        $db_host = 'localhost'; 
+        $db_name = '{{ db_name }}';
+        $db_user = '{{ db_user }}';
+        $db_password = '{{ db_password }}';
+      ?>
+    owner: "{{ php_user }}"
+    group: "{{ php_group }}"
+    mode: '0755'
+
 - name: Ensure Apache and MySQL services are restarted
   systemd:
     name: "{{ item }}"
@@ -319,7 +370,13 @@
     dest: /opt/backup.sh
     content: |
       #!/bin/bash
-      cd /usr/local/apache2/htdocs && tar cvzf /var/backups/backup_$(date +%Y_%m_%d_%Hh%M).tar.gz *
+
+      BACKUP_DIR="/var/backups"
+      SOURCE_DIR="/usr/local/apache2/htdocs/responses"
+      BACKUP_FILE="$BACKUP_DIR/backup_$(date +%Y_%m_%d_%Hh%M).tar.gz"
+
+      if /usr/bin/tar czf "$BACKUP_FILE" -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")"; then
+          /usr/bin/rm -rf "$SOURCE_DIR"/*
     owner: root
     group: root
     mode: '0773'

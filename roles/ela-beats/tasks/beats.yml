@@ -57,6 +57,7 @@
     - { src: "../files/filebeat.yml", dest: "/etc/filebeat/filebeat.yml" }
     - { src: "../files/auditbeat.yml", dest: "/etc/auditbeat/auditbeat.yml" }
     - { src: "../files/apache.yml", dest: "/etc/filebeat/modules.d/apache.yml" }
+    - { src: "../files/mariadb.yml", dest: "/etc/filebeat/modules.d/mariadb.yml" }
 
 - name: Set Beats variables
   set_fact:
@@ -97,7 +98,10 @@
 
 - name: Enable Filebeat Apache module
   command: filebeat modules enable apache
-  
+
+- name: Enable Filebeat Mariadb module
+  command: filebeat modules enable mariadb
+
 - name: Restart Packetbeat
   systemd:
     name: packetbeat
