@@ -1,7 +1,0 @@
-- module: mariadb
-  log:
-    enabled: true
-    var.paths:
-      - /var/log/mysql/mariadb.log
-      - /var/log/mysql/mariadb-slow.log
-      - /var/log/mysql/error.log

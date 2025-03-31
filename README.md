@@ -5,6 +5,7 @@ Follow how to install ludus, add roles, and deploy ranges
 https://docs.ludus.cloud/docs/quick-start/install-ludus
 
 ### Required Roles
+- ela-attacker
 - ela-apache
 - ela-beats
 - badsectorlabs.ludus_elastic_container
@@ -15,6 +16,18 @@ https://10.5.20.11:5601/login?next=%2Fapp%2Fhome
 ```
 elastic
 S3cur3P@ss?
+```
+
+## Login to Attacker 
+https://10.5.30.50:8444/
+
+```
+# vnc creds
+kali
+kaliuser
+# user creds
+kali
+kali
 ```
 
 ### Win11 packetbeat has to be installed manually

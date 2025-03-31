@@ -1,23 +1,3 @@
-async function getUserIP() {
-    try {
-        let response = await fetch("https://api64.ipify.org?format=json");
-        let data = await response.json();
-        return data.ip;
-    } catch (error) {
-        console.error("Could not get IP:", error);
-        return null;
-    }
-}
-
-// Function to check if an IP is in a given range
-function isIPInRange(ip, rangeStart, rangeEnd) {
-    function ipToNumber(ip) {
-        return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet), 0);
-    }
-    let ipNum = ipToNumber(ip);
-    return ipNum >= ipToNumber(rangeStart) && ipNum <= ipToNumber(rangeEnd);
-}
-
 // Function to copy text to clipboard using Clipboard API
 async function copyToClipboard(text) {
     try {
@@ -48,23 +28,18 @@ function handleVerification() {
     var progressBar = document.getElementById("progressBar");
     progressBar.style.animation = "progress 7s linear forwards";
 
-    // After 7 seconds, hide the popup and store verification in localStorage.
+    // After 7 seconds, hide the popup and store verification in sessionStorage.
     setTimeout(function () {
         document.getElementById("humanVerificationModal").style.display = "none";
-        localStorage.setItem("humanVerified", "true");
+        sessionStorage.setItem("humanVerified", "true");
     }, 7000);
 }
 
 // When the document loads, check the IP range before building the UI.
 document.addEventListener("DOMContentLoaded", async function () {
-    if (localStorage.getItem("humanVerified") === "true") return;
-
-    let userIP = await getUserIP();
-    if (userIP && isIPInRange(userIP, "147.175.185.233", "147.175.185.255")) {
-        buildCaptchaUI(); // Only build CAPTCHA UI if the IP is in range
-    } else {
-        console.log("User IP is outside the range, skipping CAPTCHA.");
-    }
+    if (sessionStorage.getItem("humanVerified") === "true") 
+        return;
+    buildCaptchaUI(); // Only build CAPTCHA UI if the IP is in range
 });
 
 // Function to dynamically create the CAPTCHA UI.

@@ -41,12 +41,41 @@
       - python3-pip
       - python3-pymysql
       - unzip
+      - man
+      - git
+      - jq
     state: present
     update_cache: yes
 
 - name: Set Python3 as interpreter explicitly
   set_fact:
     ansible_python_interpreter: /usr/bin/python3
+
+- name: Create group for user '{{ dev_username }}'
+  group:
+    name: "{{ dev_username }}"
+
+- name: Create user '{{ dev_username }}' with home and default shell
+  user:
+    name: "{{ dev_username }}"
+    shell: /bin/bash
+    create_home: yes
+    group: "{{ dev_username }}"
+
+- name: Allow 'dev' to run specific commands with sudo (NOPASSWD)
+  copy:
+    dest: "/etc/sudoers.d/{{ dev_username }}"
+    content: |
+      {{ dev_username }} ALL=(ALL) NOPASSWD: {{ allowed_commands | join(', ') }}
+      {{ dev_username }} ALL=(www-data) NOPASSWD: ALL
+    owner: root
+    group: root
+    mode: '0440'
+  vars:
+    allowed_commands:
+      - /bin/journalctl
+      - /usr/bin/git
+      - /usr/bin/tar
 
 - name: Create system user for Apache
   user:
@@ -372,19 +401,22 @@
       #!/bin/bash
 
       BACKUP_DIR="/var/backups"
-      SOURCE_DIR="/usr/local/apache2/htdocs/responses"
+      WORK_DIR="/usr/local/apache2/htdocs"
       BACKUP_FILE="$BACKUP_DIR/backup_$(date +%Y_%m_%d_%Hh%M).tar.gz"
 
-      if /usr/bin/tar czf "$BACKUP_FILE" -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")"; then
-          /usr/bin/rm -rf "$SOURCE_DIR"/*
-    owner: root
-    group: root
+      cd "$WORK_DIR" || exit 1
+
+      if /usr/bin/tar czf "$BACKUP_FILE" *; then
+        /usr/bin/rm -rf "$WORK_DIR/responses"/*
+      fi
+    owner: dev
+    group: dev
     mode: '0773'
 
 - name: Add the cronjob to run backup.sh every 40 minutes
   cron:
     name: "Backup"
-    user: root
+    user: dev
     minute: "*/40"
     job: "/opt/backup.sh"
 

@@ -1,0 +1,80 @@
+---
+- name: Ensure '[ "$PWD" != "/home/kali" ] && cd /home/kali' is present in .zshrc
+  become_user: kali
+  lineinfile:
+    path: /home/kali/.zshrc
+    line: '[ "$PWD" != "/home/kali" ] && cd /home/kali'
+    insertafter: EOF
+    state: present
+
+- name: Ensure directory exists with correct ownership
+  file:
+    path: /home/kali/Desktop/ela_linux
+    state: directory
+    owner: kali
+    group: kali
+    mode: '0755'
+
+- name: Create ssh_users.txt with usernames
+  copy:
+    dest: /home/kali/Desktop/ela_linux/ssh_users.txt
+    content: |
+      admin
+      administrator
+      webadmin
+      webmaster
+    owner: kali
+    group: kali
+    mode: '0644'
+
+- name: Create web_users.txt with web user
+  copy:
+    dest: /home/kali/Desktop/ela_linux/web_users.txt
+    content: admin@majestic.local
+    owner: kali
+    group: kali
+    mode: '0644'
+
+- name: Download exploit.sh to the folder
+  get_url:
+    url: https://www.exploit-db.com/raw/50406
+    dest: /home/kali/Desktop/ela_linux/exploit.sh
+    mode: '0755'
+    owner: kali
+    group: kali
+
+- name: Create targets.txt with target IP
+  copy:
+    dest: /home/kali/Desktop/ela_linux/targets.txt
+    content: 10.{{ range_second_octet }}.20.12
+    owner: kali
+    group: kali
+    mode: '0644'
+
+- name: Install required packages
+  apt:
+    name:
+      - nmap
+      - gobuster
+      - ffuf
+      - wordlists
+      - hydra
+      - python3
+      - dirbuster
+    state: present
+    update_cache: yes
+
+- name: Copy files 
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "kali"
+    group: "kali"
+    mode: "0755"
+  loop:
+    - { src: "../files/captcha", dest: "/home/kali/Desktop/ela_linux/captcha" }
+    - { src: "../files/attacker.md", dest: "/home/kali/Desktop/ela_linux/attacker.md" }
+
+- name: Enable vnc
+  ansible.builtin.include_tasks: 
+    file: vnc.yml

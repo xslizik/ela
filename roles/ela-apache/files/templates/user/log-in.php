@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$email || !$password) {
         http_response_code(400); // Bad Request
-        $errorMessage = "Error 400: Missing email or password.";
+        $errorMessage = "Missing email or password.";
     } else {
         try {
             $pdo = new PDO("mysql:host=$db_host;dbname=$db_name", "$db_user", "$db_password");
@@ -25,12 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: /user/user-account.php");
                 exit;
             } else {
-                http_response_code(401); // Unauthorized
-                $errorMessage = "Error 401: Wrong email or password.";
+                http_response_code(401); 
+                $errorMessage = "Wrong email or password.";
             }
         } catch (PDOException $e) {
-            http_response_code(500); // Internal Server Error
-            $errorMessage = "Error 500: Database error. Please try again later.";
+            http_response_code(500); 
+            $errorMessage = "Database error. Please try again later.";
         }
     }
 }

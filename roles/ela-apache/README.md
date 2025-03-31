@@ -11,6 +11,7 @@ None.
 Available variables are listed below, along with default values (see `defaults/main.yml`):
 ```yml
 ---
+dev_username: "dev"
 php_user: "www-data"
 php_group: "www-data"
 php_listen: "127.0.0.1:9000"

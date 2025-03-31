@@ -1,4 +1,19 @@
 ludus:
+  # ATTACKER
+  - vm_name: "{{ range_id }}-kali"
+    hostname: "{{ range_id }}-kali"
+    template: kali-x64-desktop-template
+    vlan: 30
+    ip_last_octet: 50
+    ram_gb: 4
+    cpus: 2
+    linux: true
+    testing:
+      snapshot: true
+      block_internet: true
+    roles:
+      - name: ela-attacker
+
   # SIEM SERVER
   - vm_name: "{{ range_id }}-ela"
     hostname: "{{ range_id }}-ela"
@@ -22,7 +37,7 @@ ludus:
     template: debian-12-x64-server-template
     vlan: 20
     ip_last_octet: 12
-    ram_gb: 8
+    ram_gb: 4
     cpus: 2
     linux: true
     testing:

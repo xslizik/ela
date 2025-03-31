@@ -2,7 +2,7 @@
 galaxy_info:
   role_name: ela-apache
   author: xslizik
-  description: Install vulnerable Apache PHP and Mariadb along with exploitable Cronjob
+  description: Ansible role to provision the debian machine for the Ela CTF - installs vulnerable Apache PHP and Mariadb along with exploitable Cronjob
   company: xslizik
   license: GPLv3
   min_ansible_version: "2.10"
