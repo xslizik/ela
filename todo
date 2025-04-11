@@ -5,12 +5,14 @@ https://www.reddit.com/r/elasticsearch/comments/dv8eks/comment/f7d6ctu/
 [] configure vulnerabilities on windows
 [] win ghosts ?
 [] document findings
+[] check ip if not in russian ips captcha
 
 ### Linux Dashboards
 "[Filebeat Apache] Access and error logs ECS"
 "[Auditbeat System] System Overview ECS"
 "[Auditbeat Auditd] Overview ECS"
 "[Auditbeat Auditd] Executions ECS"
+"[Filebeat MySQL] Overview ECS"
 
 ### Linux Queries
 "Apache access logs [Filebeat Apache] ECS"

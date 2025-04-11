@@ -1,0 +1,55 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" version="26.1.0">
+  <diagram name="Page-1" id="8fEBpY3mF53WQZuQoEz9">
+    <mxGraphModel dx="1687" dy="918" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="CpA1KL-9WaP0x2CAIUn9-2" target="CpA1KL-9WaP0x2CAIUn9-12" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-2" value="&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;Kali Attacker&lt;br&gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;.30.50&lt;/font&gt;&lt;/div&gt;" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.pc;" parent="1" vertex="1">
+          <mxGeometry x="140" y="195" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="CpA1KL-9WaP0x2CAIUn9-4" target="CpA1KL-9WaP0x2CAIUn9-12" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="370" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-4" value="Debian-12 Apache+PHP+Mariadb&lt;div&gt;.20.12&lt;/div&gt;" style="image;html=1;image=img/lib/clip_art/computers/Server_128x128.png" parent="1" vertex="1">
+          <mxGeometry x="420" y="190" width="90" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;startFill=0;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="230" as="targetPoint" />
+            <mxPoint x="457.33" y="460" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-6" value="&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;Win11 Domain Member&lt;br&gt;.20.14&lt;/font&gt;" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.pc;" parent="1" vertex="1">
+          <mxGeometry x="415" y="450" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;startFill=0;" parent="1" source="CpA1KL-9WaP0x2CAIUn9-9" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-9" value="Ubuntu-22.04 Elastic Search&amp;nbsp;&lt;div&gt;&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;.20.11&lt;/span&gt;&lt;/div&gt;" style="image;html=1;image=img/lib/clip_art/computers/Server_128x128.png" parent="1" vertex="1">
+          <mxGeometry x="420" y="60" width="90" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;startFill=0;" parent="1" source="CpA1KL-9WaP0x2CAIUn9-11" target="CpA1KL-9WaP0x2CAIUn9-12" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="360" y="360" />
+              <mxPoint x="360" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-11" value="Win2020 Domain Controller&lt;div&gt;&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;.20.13&lt;/span&gt;&lt;/div&gt;" style="image;html=1;image=img/lib/clip_art/computers/Server_128x128.png" parent="1" vertex="1">
+          <mxGeometry x="420" y="320" width="90" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="CpA1KL-9WaP0x2CAIUn9-12" value="Router&lt;div&gt;.10.1&lt;/div&gt;&lt;div&gt;.20.1&lt;/div&gt;" style="verticalLabelPosition=bottom;sketch=0;aspect=fixed;html=1;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.citrix.router;" parent="1" vertex="1">
+          <mxGeometry x="290" y="205" width="75.35" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

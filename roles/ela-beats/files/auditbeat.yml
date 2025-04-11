@@ -3,6 +3,8 @@ auditbeat.modules:
   audit_rules: |
     # Log all executions
     -a always,exit -F arch=b64 -S execve,execveat -k exec_commands
+    -a always,exit -F arch=b32 -S execve,execveat -k exec_commands
+
     # Log changes to system users/groups
     -w /etc/passwd -p wa -k identity
     -w /etc/group -p wa -k identity
@@ -14,12 +16,6 @@ auditbeat.modules:
 
     # Log auditd logs
     -w /var/log/audit/audit.log -p wa -k auditd
-
-    # 32-bit syscall detection
-    -a always,exit -F arch=b32 -S all -F key=32bit-abi
-
-    # Additional execution monitoring
-    -a always,exit -F arch=b64 -S execve,execveat -k exec
 
     # External access monitoring
     -a always,exit -F arch=b64 -S accept,bind,connect -F key=external-access

