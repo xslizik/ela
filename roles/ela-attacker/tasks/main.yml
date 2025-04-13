@@ -3,58 +3,6 @@
   set_fact:
     ansible_python_interpreter: /usr/bin/python3
 
-- name: Ensure '[ "$PWD" != "/home/kali" ] && cd /home/kali' is present in .zshrc
-  become_user: kali
-  lineinfile:
-    path: /home/kali/.zshrc
-    line: '[ "$PWD" != "/home/kali" ] && cd /home/kali'
-    insertafter: EOF
-    state: present
-
-- name: Ensure directory exists with correct ownership
-  file:
-    path: /home/kali/Desktop/tools
-    state: directory
-    owner: kali
-    group: kali
-    mode: '0755'
-
-- name: Create ssh_users.txt with usernames
-  copy:
-    dest: /home/kali/Desktop/tools/ssh_users.txt
-    content: |
-      admin
-      administrator
-      webadmin
-      webmaster
-    owner: kali
-    group: kali
-    mode: '0644'
-
-- name: Create web_users.txt with web user
-  copy:
-    dest: /home/kali/Desktop/tools/web_users.txt
-    content: admin@majestic.local
-    owner: kali
-    group: kali
-    mode: '0644'
-
-- name: Download exploit.sh to the folder
-  get_url:
-    url: https://www.exploit-db.com/raw/50406
-    dest: /home/kali/Desktop/tools/exploit.sh
-    mode: '0755'
-    owner: kali
-    group: kali
-
-- name: Create targets.txt with target IP
-  copy:
-    dest: /home/kali/Desktop/tools/targets.txt
-    content: 10.{{ range_second_octet }}.20.12
-    owner: kali
-    group: kali
-    mode: '0644'
-
 - name: Install required packages
   apt:
     name:
@@ -66,16 +14,48 @@
       - python3
       - dirbuster
       - python3-pip
+      - evil-winrm
+      - p7zip-full
+      - metasploit-framework
     state: present
     update_cache: yes
 
-- name: Copy all files to tools
+- name: Ensure '[ "$PWD" != "/home/kali" ] && cd /home/kali' is present in .zshrc
+  become_user: kali
+  lineinfile:
+    path: /home/kali/.zshrc
+    line: '[ "$PWD" != "/home/kali" ] && cd /home/kali'
+    insertafter: EOF
+    state: present
+
+- name: Ensure directory exists with correct ownership
+  file:
+    path: /home/kali/Desktop/ela
+    state: directory
+    owner: kali
+    group: kali
+    mode: '0755'
+
+- name: Copy all files to ela
   copy:
     src: "../files/"
-    dest: "/home/kali/Desktop/tools/"
+    dest: "/home/kali/Desktop/ela/"
     owner: "kali"
     group: "kali"
-    mode: "0755"
+    mode: "0644"
+
+- name: Create targets.txt with target IP
+  copy:
+    dest: /home/kali/Desktop/ela/linux/targets.txt
+    content: 10.{{ range_second_octet }}.20.12
+    owner: kali
+    group: kali
+    mode: '0644'
+
+- name: Clone Impacket repository
+  git:
+    repo: https://github.com/fortra/impacket.git
+    dest: /home/kali/Desktop/ela/windows/impacket
 
 - name: Install Flask with --break-system-packages
   ansible.builtin.pip:
@@ -83,26 +63,12 @@
     extra_args: --break-system-packages
     executable: pip3
 
-- name: Clone Impacket repository
-  ansible.builtin.git:
-    repo: https://github.com/fortra/impacket.git
-    dest: /home/kali/Desktop/tools/
-    clone: yes
-    update: no
-
-- name: Install Impacket with --break-system-packages
-  ansible.builtin.pip:
-    name: .
-    extra_args: --break-system-packages
-    executable: pip3
-    chdir: /home/kali/Desktop/tools/
-
 - name: Install Python requirements with --break-system-packages
   ansible.builtin.pip:
     requirements: requirements.txt
     extra_args: --break-system-packages
     executable: pip3
-    chdir: /home/kali/Desktop/tools/
+    chdir: /home/kali/Desktop/ela/windows/impacket
 
 - name: Enable vnc
   ansible.builtin.include_tasks: 

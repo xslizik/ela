@@ -1,7 +1,7 @@
 #!/bin/bash
 
 user="KWAZ"
-template="./topology-tests/3_win_test.yml"
+template="./topology-tests/4_win_siem.yml"
 
 role_location="./roles/"
 roles=(

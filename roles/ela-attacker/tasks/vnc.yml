@@ -11,7 +11,7 @@
 - name: Set the password for the kali user
   ansible.builtin.shell:
     cmd: |
-      printf "kaliuser\nkaliuser\n\n" | vncpasswd -u kali -ow /home/kali/.kasmpasswd
+      printf "password\npassword\n\n" | vncpasswd -u kali -ow /home/kali/.kasmpasswd
 
 - name: Set correct permissions for VNC passwd file
   ansible.builtin.file:

