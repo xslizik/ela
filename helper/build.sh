@@ -1,7 +1,7 @@
 #!/bin/bash
 
 user="KWAZ"
-template="./topology-tests/4_win_siem.yml"
+template="./topology-tests/topology.yml"
 
 role_location="./roles/"
 roles=(
@@ -14,7 +14,8 @@ hosts=(
     "$user-kali"
     "$user-ela"
     "$user-apache"
-    #"$user-win11"
+    "$user-win11"
+    "$user-win-server"
 )
 
 echo -ne "| ludus range status --user "$user"\n\n"

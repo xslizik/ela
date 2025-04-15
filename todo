@@ -1,9 +1,6 @@
-[] practice attack
-[] find logs in that attack
-[] add dashboard ?
-https://www.reddit.com/r/elasticsearch/comments/dv8eks/comment/f7d6ctu/
 [] document findings
-[] check ip if not in russian ips captcha
+[] check if user ip not in russian ips - captcha
+[] digital ocean / apt group ip for exfiltration
 
 ### Linux Dashboards
 "[Filebeat Apache] Access and error logs ECS"
@@ -34,5 +31,10 @@ https://www.reddit.com/r/elasticsearch/comments/dv8eks/comment/f7d6ctu/
 "HTTP Transactions Search [Packetbeat] ECS"
 "Packetbeat Search ECS"
 
-Sysmon query
+### Saved queries
+#### Sysmon query
 event.module && winlog.event_id: 1
+#### find new users
+event.dataset: user AND NOT event.action: existing_user
+#### what user did
+<user_name> AND event.action: executed AND NOT process.executable: /usr/bin/tar AND <filter_by_timestamp>

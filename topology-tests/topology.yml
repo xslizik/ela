@@ -1,24 +1,26 @@
 ludus:
   # ATTACKER
-  - vm_name: "{{ range_id }}-startup-kali"
-    hostname: "kali"
+  - vm_name: "{{ range_id }}-kali"
+    hostname: "{{ range_id }}-kali"
     template: kali-x64-desktop-template
-    vlan: 10
+    vlan: 30
     ip_last_octet: 50
-    ram_gb: 2
+    ram_gb: 4
     cpus: 2
     linux: true
     testing:
       snapshot: true
       block_internet: true
-      
+    roles:
+      - name: ela-attacker
+
   # SIEM SERVER
   - vm_name: "{{ range_id }}-ela"
     hostname: "{{ range_id }}-ela"
     template: ubuntu-22.04-x64-server-template
     vlan: 20
     ip_last_octet: 11
-    ram_gb: 8
+    ram_gb: 16
     cpus: 4
     linux: true
     testing:
@@ -35,7 +37,7 @@ ludus:
     template: debian-12-x64-server-template
     vlan: 20
     ip_last_octet: 12
-    ram_gb: 4
+    ram_gb: 8
     cpus: 2
     linux: true
     testing:
@@ -43,25 +45,22 @@ ludus:
       block_internet: true
     roles:
       - name: ela-apache
-      - name: badsectorlabs.ludus_elastic_agent
+      - name: ela-beats
         depends_on:
           - vm_name: "{{ range_id }}-ela"
             role: badsectorlabs.ludus_elastic_container
-      - name: ela-beats
-        depends_on:
-          - vm_name: "{{ range_id }}-apache"
-            role: badsectorlabs.ludus_elastic_agent
-  
-  # DOMAIN CONTROLLER
-  - vm_name: "{{ range_id }}-DC01-2022"
-    hostname: "{{ range_id }}-DC01-2022"
+
+  # WIN DC
+  - vm_name: "{{ range_id }}-win-server"
+    hostname: "{{ range_id }}-win-server"
     template: win2022-server-x64-template
-    vlan: 10
+    vlan: 20
     ip_last_octet: 13
-    ram_gb: 8
+    ram_gb: 16
     cpus: 4
     windows:
-      sysprep: yes
+      sysprep: true
+      install_additional_tools: false
     domain:
       fqdn: ludus.domain
       role: primary-dc
@@ -69,22 +68,22 @@ ludus:
       snapshot: true
       block_internet: true
     roles:
-      - name: badsectorlabs.ludus_elastic_agent
+      - name: ela-beats
         depends_on:
           - vm_name: "{{ range_id }}-ela"
-            role: badsectorlabs.ludus_elastic_containe
+            role: badsectorlabs.ludus_elastic_container
 
-  # DOMAIN MEMBER
+  # WIN PC
   - vm_name: "{{ range_id }}-win11"
     hostname: "{{ range_id }}-win11"
     template: win11-22h2-x64-enterprise-template
     vlan: 20
     ip_last_octet: 14
-    ram_gb: 8
+    ram_gb: 16
     cpus: 4
     windows:
+      sysprep: true
       install_additional_tools: false
-      sysprep: yes
     domain:
       fqdn: ludus.domain
       role: member
@@ -92,7 +91,7 @@ ludus:
       snapshot: true
       block_internet: true
     roles:
-      - name: badsectorlabs.ludus_elastic_agent
+      - name: ela-beats
         depends_on:
           - vm_name: "{{ range_id }}-ela"
-            role: badsectorlabs.ludus_elastic_containe
+            role: badsectorlabs.ludus_elastic_container

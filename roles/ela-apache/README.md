@@ -32,6 +32,7 @@ None.
 Deploys the vulnerable machine:
 ```yaml
 ludus:
+  # LINUX SERVER
   - vm_name: "{{ range_id }}-apache"
     hostname: "{{ range_id }}-apache"
     template: debian-12-x64-server-template

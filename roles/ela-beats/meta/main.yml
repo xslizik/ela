@@ -2,7 +2,7 @@
 galaxy_info:
   role_name: ela-beats
   author: xslizik
-  description: Install Auditbeat, Packetbeat, Filebeat with custom config for Ela CTF, complementing the badsectorlabs.ludus_elastic_agent role
+  description: Ansible role to provision beats with tailored configs on for the Ela CTF on  both linux (Auditbeat, Packetbeat, Filebeat) and win (winlogbeat, sysmon), complementing the badsectorlabs.ludus_elastic_agent role 
   company: xslizik
   license: GPLv3
   min_ansible_version: "2.10"
