@@ -8,6 +8,7 @@ https://docs.ludus.cloud/docs/quick-start/install-ludus
 - ela-attacker
 - ela-apache
 - ela-beats
+- ela-win
 - badsectorlabs.ludus_elastic_container
 
 ## Login 
@@ -31,16 +32,17 @@ kali
 kali
 ```
 
+### Victim Linux Server
+http://10.5.20.12
+
 ## Make sure to configure [manual changes](./changes.md) on Windows PCs
 
-## [Topology](./topology-tests/topology.yml)
+## Topology
 <img src="./topology-tests/topology.png" alt="Topology" style="display: block; margin: 0 auto;" />
 
 ## Attacker Path
 - [Linux](./roles/ela-attacker/files/linux/attacker.md)
-![](./images/linux.png)
 - [Windows](./roles/ela-attacker/files/windows/attacker.md)
-![](./images/windows.png)
 
 ### Inspiration
 - https://github.com/badsectorlabs/ludus_elastic_container

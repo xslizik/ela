@@ -417,7 +417,7 @@
   cron:
     name: "Backup"
     user: dev
-    minute: "*/40"
+    minute: "*/{{ cronjob_minutes }}"
     job: "/opt/backup.sh"
 
 - name: Restart cron service (ensure cronjob is applied)

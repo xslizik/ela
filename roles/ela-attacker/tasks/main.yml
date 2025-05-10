@@ -3,6 +3,10 @@
   set_fact:
     ansible_python_interpreter: /usr/bin/python3
 
+- name: Download and install Kali archive GPG key
+  ansible.builtin.shell: |
+    curl -fsSL https://archive.kali.org/archive-key.asc | sudo gpg --dearmor -o /usr/share/keyrings/kali-archive-keyring.gpg --yes
+
 - name: Install required packages
   apt:
     name:

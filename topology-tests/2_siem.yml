@@ -1,23 +1,4 @@
 ludus:
-  # ATTACKER
-  - vm_name: "{{ range_id }}-kali"
-    hostname: "{{ range_id }}-kali"
-    template: kali-x64-desktop-template
-    vlan: 30
-    ip_last_octet: 50
-    ram_gb: 4
-    cpus: 2
-    linux: true
-    #linux:
-    #  packages: 
-    #    - curl
-    #    - python3
-    testing:
-      snapshot: true
-      block_internet: true
-    roles:
-      - name: ela-attacker
-
   # SIEM SERVER
   - vm_name: "{{ range_id }}-ela"
     hostname: "{{ range_id }}-ela"
@@ -34,27 +15,21 @@ ludus:
       - name: badsectorlabs.ludus_elastic_container
     role_vars:
       ludus_elastic_password: "S3cur3P@ss?"
-  
-  # WIN DC
-  - vm_name: "{{ range_id }}-win-server"
-    hostname: "{{ range_id }}-win-server"
-    template: win2022-server-x64-template
+
+  # LINUX SERVER
+  - vm_name: "{{ range_id }}-apache"
+    hostname: "{{ range_id }}-apache"
+    template: debian-12-x64-server-template
     vlan: 20
-    ip_last_octet: 13
-    ram_gb: 16
-    cpus: 4
-    windows:
-      sysprep: true
-      install_additional_tools: false
-      #gpos:
-      #  - disable_defender
-    domain:
-      fqdn: ludus.domain
-      role: primary-dc
+    ip_last_octet: 12
+    ram_gb: 8
+    cpus: 2
+    linux: true
     testing:
       snapshot: true
       block_internet: true
     roles:
+      - name: ela-apache
       - name: ela-beats
         depends_on:
           - vm_name: "{{ range_id }}-ela"
@@ -69,18 +44,8 @@ ludus:
     ram_gb: 16
     cpus: 4
     windows:
-      sysprep: true
       install_additional_tools: false
-      #office_version: 2019
-      #office_arch: 64bit
-      #chocolatey_packages:
-      #  - vscodium
-      #visual_studio_version: 2019
-      #autologon_user: myuser 
-      #autologon_password: mypass
-    domain:
-      fqdn: ludus.domain
-      role: member
+      sysprep: yes
     testing:
       snapshot: true
       block_internet: true

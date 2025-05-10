@@ -1,0 +1,37 @@
+ludus:
+  # SIEM SERVER
+  - vm_name: "{{ range_id }}-ela"
+    hostname: "{{ range_id }}-ela"
+    template: ubuntu-22.04-x64-server-template
+    vlan: 20
+    ip_last_octet: 11
+    ram_gb: 16
+    cpus: 4
+    linux: true
+    testing:
+      snapshot: true
+      block_internet: true
+    roles:
+      - name: badsectorlabs.ludus_elastic_container
+    role_vars:
+      ludus_elastic_password: "S3cur3P@ss?"
+      
+  # WIN PC
+  - vm_name: "{{ range_id }}-win11"
+    hostname: "{{ range_id }}-win11"
+    template: win11-22h2-x64-enterprise-template
+    vlan: 20
+    ip_last_octet: 14
+    ram_gb: 16
+    cpus: 4
+    windows:
+      install_additional_tools: false
+      sysprep: yes
+    testing:
+      snapshot: true
+      block_internet: true
+    roles:
+      - name: ela-beats
+        depends_on:
+          - vm_name: "{{ range_id }}-ela"
+            role: badsectorlabs.ludus_elastic_container

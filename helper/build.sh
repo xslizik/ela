@@ -14,8 +14,7 @@ hosts=(
     "$user-kali"
     "$user-ela"
     "$user-apache"
-    "$user-win11"
-    "$user-win-server"
+    #"$user-win11"
 )
 
 echo -ne "| ludus range status --user "$user"\n\n"
