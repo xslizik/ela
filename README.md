@@ -35,7 +35,7 @@ kali
 ### Victim Linux Server
 http://10.5.20.12
 
-## Make sure to configure [manual changes](./todo.md) on Windows PCs
+## Make sure to configure [manual changes](./changes.md) on Windows PCs
 
 ## Topology
 <img src="./topology-tests/topology.png" alt="Topology" style="display: block; margin: 0 auto;" />
@@ -43,6 +43,10 @@ http://10.5.20.12
 ## Attacker Path
 - [Linux](./roles/ela-attacker/files/linux/attacker.md)
 - [Windows](./roles/ela-attacker/files/windows/attacker.md)
+
+## Findings 
+- [Linux](./images/linux/)
+- [Windows](./images/windows/)
 
 ### Inspiration
 - https://github.com/badsectorlabs/ludus_elastic_container

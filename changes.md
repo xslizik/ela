@@ -1,4 +1,4 @@
-### Changes
+## Changes
 1. set uac to default
 2. restart pc
 3. disable firewall
@@ -19,15 +19,9 @@ cd C:\Users\localuser\Desktop; .\install_packetbeat.ps1
 9. install unquoted.ps1 on domainmember
 10. install druva on domainmember
 
-### TODO
-- tidy up attacker path
-- automize ela-win + changes
-- add global ips for exfil
-- check ip if not in russian ips captcha
-- find out how to import/export logs 
-- add user account with limited priviledges + dark theme
+## Interesting Dashboards
 
-### Security Alerts
+### Alerts Dashboard
 
 ### Linux Dashboards
 - `"[Filebeat Apache] Access and error logs ECS"`
